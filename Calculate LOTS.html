@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <meta charset="UTF-8">
+      <title>Trading Assistance</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+         :root {
+         --font-main: 'Segoe UI', Roboto, sans-serif;
+         --primary-color: #0057ff;
+         --bg-color: #f9fafc;
+         --card-bg: #ffffff;
+         --text-color: #333;
+         --border-color: #e0e0e0;
+         --header-bg: #f0f4ff;
+         --shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+         --radius: 12px;
+         }
+         body.dark {
+         --bg-color: #121212;
+         --card-bg: #1e1e1e;
+         --text-color: #e0e0e0;
+         --border-color: #333;
+         --header-bg: #333333;
+         --shadow: 0 8px 20px rgba(255, 255, 255, 0.05);
+         }
+         body {
+         margin: 0;
+         font-family: var(--font-main);
+         background: var(--bg-color);
+         color: var(--text-color);
+         padding: 30px;
+         transition: background 0.3s, color 0.3s;
+         }
+         h1, h2 {
+         font-weight: 600;
+         color: var(--primary-color);
+         margin-bottom: 0.5rem;
+         }
+         h1 {
+         font-size: 2.2rem;
+         }
+         h2 {
+         font-size: 1.5rem;
+         margin-top: 2rem;
+         }
+         .row {
+         display: flex;
+         flex-wrap: wrap;
+         gap: 30px;
+         margin-bottom: 40px;
+         }
+         .card {
+         background: var(--card-bg);
+         border-radius: var(--radius);
+         box-shadow: var(--shadow);
+         padding: 20px;
+         flex: 1;
+         min-width: 300px;
+         transition: background 0.3s;
+         }
+         table {
+         width: 100%;
+         border-collapse: collapse;
+         }
+         th, td {
+         padding: 12px;
+         text-align: left;
+         border-bottom: 1px solid var(--border-color);
+         }
+         th {
+         background: var(--header-bg);
+         font-weight: 600;
+         transition: background 0.3s;
+         }
+         input[type="number"] {
+         padding: 6px 10px;
+         font-size: 1rem;
+         width: 100%;
+         box-sizing: border-box;
+         background: var(--bg-color);
+         color: var(--text-color);
+         border: 1px solid var(--border-color);
+         border-radius: 6px;
+         }
+         .clock {
+         font-size: 1rem;
+         margin-bottom: 8px;
+         }
+         iframe {
+         width: 100%;
+         height: 600px;
+         border: none;
+         border-radius: var(--radius);
+         box-shadow: var(--shadow);
+         }
+         .rss-feed ul {
+         list-style: none;
+         padding-left: 0;
+         }
+         .rss-feed li {
+         margin-bottom: 12px;
+         font-size: 0.95rem;
+         line-height: 1.4;
+         }
+         .rss-feed a {
+         text-decoration: none;
+         color: #0077cc;
+         }
+         .rss-feed a:hover {
+         text-decoration: underline;
+         }
+         .news-countdown {
+         font-size: 1.2rem;
+         color: #d32f2f;
+         margin-bottom: 20px;
+         }
+         .toggle-btn {
+         margin-bottom: 20px;
+         padding: 8px 16px;
+         font-size: 0.95rem;
+         background: var(--primary-color);
+         color: white;
+         border: none;
+         border-radius: 8px;
+         cursor: pointer;
+         }
+         .toggle-container {
+         position: fixed;
+         top: 20px;
+         right: 20px;
+         z-index: 1000;
+         }
+         #themeToggle {
+         padding: 8px 14px;
+         border: none;
+         border-radius: 8px;
+         background: var(--primary-color);
+         color: white;
+         font-size: 0.9rem;
+         cursor: pointer;
+         box-shadow: var(--shadow);
+         }
+         @media (max-width: 768px) {
+         .row {
+         flex-direction: column;
+         }
+         }
+      </style>
+   </head>
+   <body>
+      <div class="card">
+         <div class="clock"><strong>NY Time:</strong> <span id="nyTime"></span></div>
+         <div class="clock"><strong>MT5 Time (MAVEN):</strong> <span id="mt5Time"></span></div>
+         <div class="toggle-container">
+            <button class="toggle-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
+         </div>
+      </div>
+      <h1>Trading Assistance Dashboard</h1>
+      <!-- First Row -->
+      <div class="row">
+         <div class="card">
+            <h2>Lot Size Calculator</h2>
+            <p>Enter Risk (USD) and SL (Points)</p>
+            <!-- Lot Size Calculator Table -->
+            <table>
+               <tr>
+                  <th>Pair Type (Values changes brokerwise)</th>
+                  <th>Risk(USD)</th>
+                  <th>SL(points)</th>
+                  <th>Lot Size</th>
+               </tr>
+               <tr>
+                  <td>EUR/GBP/XAU/AUD</td>
+                  <td><input type="number" id="riskX"></td>
+                  <td><input type="number" id="slA"></td>
+                  <td><span id="lot1">-</span></td>
+               </tr>
+               <tr>
+                  <td>JPY</td>
+                  <td><input type="number" id="riskY"></td>
+                  <td><input type="number" id="slB"></td>
+                  <td><span id="lot2">-</span></td>
+               </tr>
+               <tr>
+                  <td>CHF</td>
+                  <td><input type="number" id="riskZ"></td>
+                  <td><input type="number" id="slC"></td>
+                  <td><span id="lot3">-</span></td>
+               </tr>
+               <tr>
+                  <td>CAD</td>
+                  <td><input type="number" id="riskW"></td>
+                  <td><input type="number" id="slD"></td>
+                  <td><span id="lot4">-</span></td>
+               </tr>
+               <tr>
+                  <td>AUD/JPY</td>
+                  <td><input type="number" id="riskAJ"></td>
+                  <td><input type="number" id="slAJ"></td>
+                  <td><span id="lotAJ">-</span></td>
+               </tr>
+               <tr>
+                  <td>BTC/USD</td>
+                  <td><input type="number" id="riskBU"></td>
+                  <td><input type="number" id="slBU"></td>
+                  <td><span id="lotBU">-</span></td>
+               </tr>
+	       <tr>
+                  <td>US30/US500</td>
+                  <td><input type="number" id="riskUS30"></td>
+                  <td><input type="number" id="slUS30"></td>
+                  <td><span id="lotUS30">-</span></td>
+               </tr>
+	       <tr>
+                  <td>US100</td>
+                  <td><input type="number" id="riskUS100"></td>
+                  <td><input type="number" id="slUS100"></td>
+                  <td><span id="lotUS100">-</span></td>
+               </tr>
+
+            </table>
+         </div>
+         <div class="card rss-feed">
+            <h2>Breaking Forex News</h2>
+            <button onclick="loadNews()" style="margin-bottom: 10px; padding: 6px 12px; border: none; border-radius: 8px; background: #0057ff; color: white; cursor: pointer;">Refresh News</button>
+            <div id="rssContainer">Loading news...</div>
+ <!-- myfxbook.com outlook widget - Start -->
+      <div>
+      	<script class="powered" type="text/javascript"
+            src="https://widgets.myfxbook.com/scripts/fxOutlook.js?type=0&symbols=,1,2,3,7,8,9,11,13,14,17,29,47,51"></script>
+      </div>
+<div style="font-size: 10px">
+<a href="https://www.myfxbook.com" title="" class="myfxbookLink" target="_self" rel="noopener">
+            Powered by Myfxbook.com</a>
+    </div>
+
+<script type="text/javascript">showOutlookWidget()</script>
+<!-- myfxbook.com outlook widget - End -->
+         </div>
+      </div>
+      <!-- Third Row -->
+      <div class="row">
+         <div class="card">
+            <h2>Economic Calendar</h2>
+            <iframe src="https://widget.myfxbook.com/widget/calendar.html?lang=en&impacts=3&symbols=EUR,GBP,USD"></iframe>
+         </div>
+      </div>
+
+     
+
+      <script>
+         let currentUSDJPY = 0; // Global variable to store live USD/JPY
+         
+         
+            // Dark mode toggle
+            function toggleDarkMode() {
+              document.body.classList.toggle("dark");
+            }
+         
+            // Lot size calculation
+            function calculateLotSize() {
+              const getVal = id => parseFloat(document.getElementById(id).value);
+              const setText = (id, val) => document.getElementById(id).textContent = val;
+         
+              const calc = (risk, sl, multiplier = 1) => (risk && sl) ? (risk / sl * multiplier).toFixed(3) : "-";
+         
+              setText("lot1", calc(getVal("riskX"), getVal("slA")));
+              setText("lot2", calc(getVal("riskY"), getVal("slB"), 1.479195));
+              setText("lot3", calc(getVal("riskZ"), getVal("slC"), 0.79682));
+              setText("lot4", calc(getVal("riskW"), getVal("slD"), 1.36877));
+              setText("lotAJ", calc(getVal("riskAJ"), getVal("slAJ"), currentUSDJPY/100));
+	      setText("lotBU", calc(getVal("riskBU"), getVal("slBU"), 100));
+	      setText("lotUS30", calc(getVal("riskUS30"), getVal("slUS30"), 100));
+	      setText("lotUS100", calc(getVal("riskUS100"), getVal("slUS100"), 5));
+            }
+         
+            ["riskX", "slA", "riskY", "slB", "riskZ", "slC", "riskW", "slD", "riskAJ", "slAJ","riskBU", "slBU","riskUS30", "slUS30", "riskUS100", "slUS100"].forEach(id =>
+              document.getElementById(id).addEventListener("input", calculateLotSize)
+            );
+         
+            // Time converters
+            function updateClocks() {
+              const now = new Date();
+              const nyTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false });
+              document.getElementById("nyTime").textContent = nyTime;
+         
+              const mt5Offset = -5.5;
+              const mt5 = new Date(now.getTime() + mt5Offset * 3600000);
+              document.getElementById("mt5Time").textContent = mt5.toTimeString().split(" ")[0];
+            }
+            setInterval(updateClocks, 1000);
+            updateClocks();
+         
+            // Forex RSS feed
+            function loadNews() {
+              document.getElementById("rssContainer").innerHTML = "Loading news...";
+              fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.forexlive.com/feed/")
+                .then(res => res.json())
+                .then(data => {
+                  const items = data.items.slice(0, 8);
+                  const html = items.map(item => `<li><a href="${item.link}" target="_blank">${item.title}</a></li>`).join('');
+                  document.getElementById("rssContainer").innerHTML = `<ul>${html}</ul>`;
+                })
+                .catch(() => {
+                  document.getElementById("rssContainer").textContent = "Failed to load news.";
+                });
+            }
+            loadNews();
+            
+         
+         
+         async function fetchUSDJPY() {
+          const priceEl = document.getElementById("usdjpyPrice");
+         
+          // Helper to render
+          const render = (val) => {
+            currentUSDJPY = Number(val);
+          };
+         
+          try {
+            // Primary: exchangerate.host (JPY per 1 USD)
+            const r = await fetch("https://api.exchangerate.host/convert?from=USD&to=JPY&amount=1", { cache: "no-store" });
+            if (!r.ok) throw new Error("HTTP " + r.status);
+            const data = await r.json();
+            const price = data?.result ?? data?.info?.rate;
+            if (price) { render(price); return; }
+            throw new Error("Unexpected payload from exchangerate.host");
+          } catch (e1) {
+            try {
+              // Fallback: frankfurter.app
+              const r2 = await fetch("https://api.frankfurter.app/latest?from=USD&to=JPY", { cache: "no-store" });
+              if (!r2.ok) throw new Error("HTTP " + r2.status);
+              const d2 = await r2.json();
+              const price2 = d2?.rates?.JPY;
+              if (price2) { render(price2); return; }
+              throw new Error("Unexpected payload from frankfurter.app");
+            } catch (e2) {
+              console.error("USD/JPY fetch failed:", e1, e2);
+              priceEl.textContent = "Error";
+              timeEl.textContent = "";
+            }
+          }
+         }
+         
+         // Kick off now and refresh every 10 seconds
+         fetchUSDJPY();
+         setInterval(fetchUSDJPY, 10000);    
+          
+      </script>
+   </body>
+</html>
