@@ -94,22 +94,7 @@
          border-radius: var(--radius);
          box-shadow: var(--shadow);
          }
-         .rss-feed ul {
-         list-style: none;
-         padding-left: 0;
-         }
-         .rss-feed li {
-         margin-bottom: 12px;
-         font-size: 0.95rem;
-         line-height: 1.4;
-         }
-         .rss-feed a {
-         text-decoration: none;
-         color: #0077cc;
-         }
-         .rss-feed a:hover {
-         text-decoration: underline;
-         }
+
          .news-countdown {
          font-size: 1.2rem;
          color: #d32f2f;
@@ -221,10 +206,38 @@
 
             </table>
          </div>
-         <div class="card rss-feed">
-            <h2>Breaking Forex News</h2>
-            <button onclick="loadNews()" style="margin-bottom: 10px; padding: 6px 12px; border: none; border-radius: 8px; background: #0057ff; color: white; cursor: pointer;">Refresh News</button>
-            <div id="rssContainer">Loading news...</div>
+         
+
+<div class="card">
+   <h2>FinancialJuice News</h2>
+
+   <div id="financialjuice-news-widget-container"></div>
+
+   <script type="text/javascript">
+      var jo = document.createElement("script");
+      jo.type = "text/javascript";
+      jo.id = "FJ-Widgets";
+
+      var r = Math.floor(Math.random() * 10000);
+
+      jo.src = "https://feed.financialjuice.com/widgets/widgets.js?r=" + r;
+
+      jo.onload = function () {
+         var options = {};
+         options.container = "financialjuice-news-widget-container";
+         options.mode = document.body.classList.contains("dark") ? "Dark" : "Light";
+         options.width = "100%";
+         options.height = "600px";
+         options.backColor = "1e222d";
+         options.fontColor = "b2b5be";
+         options.widgetType = "NEWS";
+
+         new window.FJWidgets.createWidget(options);
+      };
+
+      document.head.appendChild(jo);
+   </script>
+
  <!-- myfxbook.com outlook widget - Start -->
       <div>
       	<script class="powered" type="text/javascript"
@@ -292,22 +305,7 @@
             setInterval(updateClocks, 1000);
             updateClocks();
          
-            // Forex RSS feed
-            function loadNews() {
-              document.getElementById("rssContainer").innerHTML = "Loading news...";
-              fetch("https://api.rss2json.com/v1/api.json?rss_url=https://www.forexlive.com/feed/")
-                .then(res => res.json())
-                .then(data => {
-                  const items = data.items.slice(0, 8);
-                  const html = items.map(item => `<li><a href="${item.link}" target="_blank">${item.title}</a></li>`).join('');
-                  document.getElementById("rssContainer").innerHTML = `<ul>${html}</ul>`;
-                })
-                .catch(() => {
-                  document.getElementById("rssContainer").textContent = "Failed to load news.";
-                });
-            }
-            loadNews();
-            
+                       
          
          
          async function fetchUSDJPY() {
