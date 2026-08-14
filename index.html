@@ -136,7 +136,7 @@
    <body>
       <div class="card">
          <div class="clock"><strong>NY Time:</strong> <span id="nyTime"></span></div>
-         <div class="clock"><strong>MT5 Time (MAVEN):</strong> <span id="mt5Time"></span></div>
+         <div class="clock"><strong>MT5 Time (FTT):</strong> <span id="mt5Time"></span></div>
          <div class="toggle-container">
             <button class="toggle-btn" onclick="toggleDarkMode()">Toggle Dark Mode</button>
          </div>
@@ -361,7 +361,7 @@
               const nyTime = now.toLocaleTimeString('en-US', { timeZone: 'America/New_York', hour12: false });
               document.getElementById("nyTime").textContent = nyTime;
          
-              const mt5Offset = -5.5;
+              const mt5Offset = -4.5;
               const mt5 = new Date(now.getTime() + mt5Offset * 3600000);
               document.getElementById("mt5Time").textContent = mt5.toTimeString().split(" ")[0];
             }
