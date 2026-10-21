@@ -131,6 +131,58 @@
          flex-direction: column;
          }
          }
+      
+         .polymarket-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+         }
+         .polymarket-open-link {
+            color: var(--primary-color);
+            font-weight: 600;
+            text-decoration: none;
+         }
+         .polymarket-open-link:hover { text-decoration: underline; }
+         .polymarket-note { font-size: 0.9rem; opacity: 0.8; margin: 8px 0 14px; }
+         .pm-status { padding: 10px 12px; margin: 12px 0; border-radius: 8px; background: var(--header-bg); font-size: 0.9rem; }
+         .pm-status.error { border-left: 4px solid #d32f2f; }
+         .pm-status.success { border-left: 4px solid #23966a; }
+         .pm-controls { display: flex; align-items: end; gap: 12px; flex-wrap: wrap; margin: 14px 0; }
+         .pm-controls label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; font-size: .9rem; }
+         .pm-controls select, .pm-controls button { box-sizing: border-box; padding: 9px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-color); color: var(--text-color); font: inherit; }
+         .pm-controls select { min-width: 250px; max-width: 100%; }
+         .pm-controls button { background: var(--primary-color); color: #fff; border: none; cursor: pointer; }
+         .pm-kpis { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0; }
+         .pm-kpi { padding: 14px; border: 1px solid var(--border-color); border-radius: 10px; min-width: 0; }
+         .pm-kpi-label { font-size: .78rem; opacity: .72; margin-bottom: 6px; }
+         .pm-kpi-value { font-weight: 700; font-size: 1.25rem; overflow-wrap: anywhere; }
+         .pm-chart-title { margin: 18px 0 6px; font-size: 1.05rem; font-weight: 650; }
+         .pm-chart-wrap { width: 100%; min-height: 280px; position: relative; }
+         #pmHistoryChart { display: block; width: 100%; height: 320px; }
+         .pm-legend { display: flex; flex-wrap: wrap; gap: 10px 16px; margin: 6px 0 16px; font-size: .83rem; }
+         .pm-legend-item { display: inline-flex; align-items: center; gap: 6px; }
+         .pm-legend-swatch { width: 18px; height: 3px; border-radius: 3px; display: inline-block; }
+         .pm-table-wrap { overflow-x: auto; }
+         .pm-table { width: 100%; border-collapse: collapse; min-width: 520px; }
+         .pm-table th, .pm-table td { padding: 10px 9px; border-bottom: 1px solid var(--border-color); text-align: left; vertical-align: middle; }
+         .pm-table th { background: var(--header-bg); font-size: .82rem; }
+         .pm-outcome-name { font-weight: 600; }
+         .pm-outcome-question { display: block; opacity: .7; font-size: .78rem; margin-top: 4px; max-width: 520px; }
+         .pm-bar-track { width: 100%; min-width: 90px; background: var(--border-color); height: 8px; border-radius: 99px; overflow: hidden; }
+         .pm-bar { height: 100%; background: var(--primary-color); border-radius: 99px; }
+         .pm-small { font-size: .78rem; opacity: .7; }
+         .pm-market-link { color: var(--primary-color); text-decoration: none; }
+         .pm-market-link:hover { text-decoration: underline; }
+         @media (max-width: 768px) {
+            body { padding: 16px; }
+            .pm-kpis { grid-template-columns: 1fr; }
+            #pmHistoryChart { height: 260px; }
+            .pm-controls select { min-width: 0; width: 100%; }
+            .pm-controls label { width: 100%; }
+         }
+
       </style>
    </head>
    <body>
@@ -315,6 +367,35 @@
 <!-- myfxbook.com outlook widget - End -->
          </div>
       </div>
+      <!-- Polymarket Fed Rates: rendered locally using Polymarket public APIs -->
+      <div class="row">
+         <div class="card" style="flex-basis: 100%; min-width: 0;">
+            <div class="polymarket-heading-row">
+               <h2 style="margin-top: 0;">Polymarket Fed Rates</h2>
+               <a class="polymarket-open-link" href="https://polymarket.com/dashboards/fed-rates" target="_blank" rel="noopener noreferrer">Open original dashboard</a>
+            </div>
+            <p class="polymarket-note">Current market-implied probabilities for upcoming Federal Reserve rate decisions, with historical probability lines. Data is fetched directly from Polymarket public APIs; this does not place trades.</p>
+            <div id="pmStatus" class="pm-status" role="status" aria-live="polite">Loading Fed-rate markets from Polymarket…</div>
+            <div class="pm-kpis">
+               <div class="pm-kpi"><div class="pm-kpi-label">Selected meeting</div><div id="pmKpiMeeting" class="pm-kpi-value">—</div></div>
+               <div class="pm-kpi"><div class="pm-kpi-label">Active outcomes</div><div id="pmKpiOutcomes" class="pm-kpi-value">—</div></div>
+               <div class="pm-kpi"><div class="pm-kpi-label">Event volume</div><div id="pmKpiVolume" class="pm-kpi-value">—</div></div>
+            </div>
+            <div class="pm-controls">
+               <label for="pmMeetingSelect">FOMC meeting
+                  <select id="pmMeetingSelect" disabled><option>Loading meetings…</option></select>
+               </label>
+               <button type="button" id="pmRefreshButton">Refresh data</button>
+            </div>
+            <div class="pm-chart-title">Historical implied probability — last 30 days</div>
+            <div class="pm-chart-wrap"><canvas id="pmHistoryChart" role="img" aria-label="Historical chart of Polymarket implied probabilities for Fed rate outcomes"></canvas></div>
+            <div id="pmLegend" class="pm-legend"></div>
+            <div class="pm-chart-title">Current market probabilities</div>
+            <div id="pmOutcomes" class="pm-table-wrap"><p class="pm-small">Waiting for market data…</p></div>
+            <p class="pm-small" style="margin-top: 12px;">Probabilities are market prices, not official Federal Reserve forecasts. Historical series may be unavailable for markets with no recorded price history. Source: Polymarket Gamma API and Data API.</p>
+         </div>
+      </div>
+
       <!-- Third Row -->
       <div class="row">
          <div class="card">
@@ -553,5 +634,350 @@ calculateLayerOrders
 
 calculateLayerOrders();
       </script>
+<script>
+(function () {
+  "use strict";
+
+  const GAMMA = "https://gamma-api.polymarket.com";
+  const DATA_API = "https://data-api.polymarket.com/v2/prices-history";
+  const SEARCH_TERMS = ["Fed decision", "Federal Reserve interest rates", "FOMC rate"];
+  const LINE_COLORS = ["#2563eb", "#16a34a", "#dc2626", "#9333ea", "#d97706", "#0891b2", "#db2777", "#64748b"];
+  const $ = (id) => document.getElementById(id);
+  const historyCache = new Map();
+  let fedEvents = [];
+  let selectedEventKey = "";
+  let lastCanvasSeries = [];
+
+  function parseArray(value) {
+    if (Array.isArray(value)) return value;
+    if (typeof value === "string") {
+      try { const parsed = JSON.parse(value); return Array.isArray(parsed) ? parsed : []; }
+      catch (_) { return []; }
+    }
+    return [];
+  }
+
+  function safeNumber(value) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function escapeHtml(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  }
+
+  function setStatus(message, kind) {
+    const el = $("pmStatus");
+    el.textContent = message;
+    el.className = "pm-status" + (kind ? " " + kind : "");
+  }
+
+  function marketProbability(market) {
+    const outcomes = parseArray(market.outcomes).map(v => String(v).toLowerCase());
+    const prices = parseArray(market.outcomePrices || market.outcome_prices);
+    const yesIndex = outcomes.findIndex(v => v === "yes");
+    let value = prices[yesIndex >= 0 ? yesIndex : 0];
+    value = safeNumber(value);
+    if (value === null) value = safeNumber(market.lastTradePrice || market.last_trade_price);
+    if (value !== null && value >= 0 && value <= 1) return value;
+    return null;
+  }
+
+  function marketTokenId(market) {
+    const ids = parseArray(market.clobTokenIds || market.clobTokenIDs || market.clob_token_ids);
+    const outcomes = parseArray(market.outcomes).map(v => String(v).toLowerCase());
+    const yesIndex = outcomes.findIndex(v => v === "yes");
+    return ids[yesIndex >= 0 ? yesIndex : 0] ? String(ids[yesIndex >= 0 ? yesIndex : 0]) : "";
+  }
+
+  function looksLikeFedEvent(event) {
+    const text = [event.title, event.slug, event.description, event.subtitle].filter(Boolean).join(" ");
+    return /\bfed\b|federal reserve|\bfomc\b|interest rates?/i.test(text);
+  }
+
+  function looksLikeRateMarket(market, event) {
+    const text = [event.title, event.slug, market.question, market.groupItemTitle, market.description].filter(Boolean).join(" ");
+    return /\bfed\b|federal reserve|\bfomc\b|interest rates?|basis points?|\bbps\b/i.test(text) &&
+      /rate|bps|basis point|no change|unchanged|cut|decrease|increase|hike|raise/i.test(text);
+  }
+
+  function eventDate(event) {
+    const dates = [event.eventDate, event.endDate, event.endDateIso, event.startDate].filter(Boolean);
+    for (const date of dates) {
+      const ts = Date.parse(date);
+      if (Number.isFinite(ts)) return ts;
+    }
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  function formatDate(timestamp) {
+    if (!timestamp || timestamp === Number.MAX_SAFE_INTEGER) return "Date not listed";
+    return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" }).format(new Date(timestamp));
+  }
+
+  function eventKey(event) { return String(event.id || event.slug || event.title); }
+
+  function eventUrl(event) {
+    const slug = String(event.slug || "").trim();
+    return slug ? "https://polymarket.com/event/" + encodeURIComponent(slug) : "https://polymarket.com/dashboards/fed-rates";
+  }
+
+  function marketLabel(market) {
+    const q = String(market.question || market.groupItemTitle || "Fed rate outcome");
+    if (/no change|unchanged|stay the same|hold rates|maintain/i.test(q)) return "No change";
+    const amountMatch = q.match(/(\d+(?:\.\d+)?)\s*(?:bps|basis points?)/i);
+    const amount = amountMatch ? amountMatch[1] + " bps" : "";
+    if (/\b(cut|cuts|decrease|decreases|decreased|lower|reduce|reduces|reduction)\b/i.test(q)) return "Cut" + (amount ? " " + amount : "");
+    if (/\b(hike|hikes|increase|increases|increased|raise|raises|raised)\b/i.test(q)) return "Hike" + (amount ? " " + amount : "");
+    return q.length > 70 ? q.slice(0, 67) + "…" : q;
+  }
+
+  async function fetchJson(url) {
+    const response = await fetch(url, { method: "GET", cache: "no-store", headers: { "Accept": "application/json" } });
+    if (!response.ok) throw new Error("HTTP " + response.status + " from " + new URL(url).hostname);
+    return response.json();
+  }
+
+  async function discoverEvents() {
+    const searched = await Promise.allSettled(SEARCH_TERMS.map(term => {
+      const params = new URLSearchParams({ q: term, limit_per_type: "20", keep_closed_markets: "0", search_profiles: "false", search_tags: "false" });
+      return fetchJson(GAMMA + "/public-search?" + params.toString());
+    }));
+
+    const raw = [];
+    for (const result of searched) {
+      if (result.status === "fulfilled") {
+        const body = result.value;
+        if (Array.isArray(body)) raw.push(...body);
+        else if (Array.isArray(body.events)) raw.push(...body.events);
+      }
+    }
+
+    // Fallback: query the event endpoint if public search returns no usable event objects.
+    if (!raw.length) {
+      const url = GAMMA + "/events?limit=100&offset=0&order=id&ascending=false&active=true&closed=false";
+      const fallback = await fetchJson(url);
+      if (Array.isArray(fallback)) raw.push(...fallback);
+    }
+
+    const deduped = new Map();
+    for (const event of raw) {
+      if (!event || !looksLikeFedEvent(event) || event.closed === true || event.archived === true || event.active === false) continue;
+      const sourceMarkets = Array.isArray(event.markets) ? event.markets : [];
+      const markets = sourceMarkets.filter(m => m && m.closed !== true && m.archived !== true && m.active !== false && looksLikeRateMarket(m, event))
+        .map(m => ({ ...m, _probability: marketProbability(m), _tokenId: marketTokenId(m), _label: marketLabel(m) }))
+        .filter(m => m._probability !== null);
+      if (!markets.length) continue;
+      const key = eventKey(event);
+      const existing = deduped.get(key);
+      if (!existing || markets.length > existing.markets.length) deduped.set(key, { ...event, markets });
+    }
+
+    return Array.from(deduped.values())
+      .sort((a, b) => eventDate(a) - eventDate(b))
+      .slice(0, 12);
+  }
+
+  function renderMeetingOptions() {
+    const select = $("pmMeetingSelect");
+    const previous = selectedEventKey;
+    select.innerHTML = "";
+    for (const event of fedEvents) {
+      const option = document.createElement("option");
+      option.value = eventKey(event);
+      option.textContent = (event.title || event.slug || "Fed decision") + " — " + formatDate(eventDate(event));
+      select.appendChild(option);
+    }
+    select.disabled = !fedEvents.length;
+    if (!fedEvents.length) return;
+    selectedEventKey = fedEvents.some(e => eventKey(e) === previous) ? previous : eventKey(fedEvents[0]);
+    select.value = selectedEventKey;
+  }
+
+  function selectedEvent() { return fedEvents.find(e => eventKey(e) === selectedEventKey) || fedEvents[0] || null; }
+
+  function formatVolume(value) {
+    const n = safeNumber(value);
+    if (n === null) return "—";
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: n >= 1000000 ? "compact" : "standard", maximumFractionDigits: n >= 1000000 ? 2 : 0 }).format(n);
+  }
+
+  function renderMarketTable(event) {
+    const list = [...event.markets].sort((a, b) => b._probability - a._probability);
+    $("pmOutcomes").innerHTML = '<table class="pm-table"><thead><tr><th>Rate outcome</th><th>Implied probability</th><th>Volume</th></tr></thead><tbody>' + list.map(m => {
+      const pct = (m._probability * 100).toFixed(1);
+      const volume = m.volumeNum ?? m.volume ?? m.volumeClob;
+      const question = m.question || m._label;
+      return '<tr><td><span class="pm-outcome-name">' + escapeHtml(m._label) + '</span><span class="pm-outcome-question">' + escapeHtml(question) + '</span></td><td><div style="display:flex;align-items:center;gap:10px;min-width:170px"><strong style="min-width:52px">' + pct + '%</strong><div class="pm-bar-track"><div class="pm-bar" style="width:' + Math.max(0, Math.min(100, Number(pct))) + '%"></div></div></div></td><td>' + escapeHtml(formatVolume(volume)) + '</td></tr>';
+    }).join("") + '</tbody></table>';
+  }
+
+  function renderSelectedEvent() {
+    const event = selectedEvent();
+    if (!event) {
+      $("pmKpiMeeting").textContent = "No active meeting found";
+      $("pmKpiOutcomes").textContent = "0";
+      $("pmKpiVolume").textContent = "—";
+      $("pmOutcomes").innerHTML = '<p>No active Fed-rate outcome markets were returned by the API. Open the original dashboard to check whether Polymarket has changed its market structure.</p>';
+      drawChart([]);
+      return;
+    }
+    const meeting = event.title || event.slug || "Fed decision";
+    $("pmKpiMeeting").textContent = meeting;
+    $("pmKpiOutcomes").textContent = String(event.markets.length);
+    const totalVolume = event.volumeNum ?? event.volume ?? event.volumeClob;
+    $("pmKpiVolume").textContent = formatVolume(totalVolume);
+    renderMarketTable(event);
+    loadHistory(event).catch(error => {
+      console.warn("Polymarket history load failed", error);
+      drawChart([]);
+      $("pmLegend").textContent = "Historical probability data could not be loaded. Current market prices are still shown above.";
+    });
+  }
+
+  async function fetchHistory(tokenId) {
+    const params = new URLSearchParams({ token_id: tokenId, interval: "1m", limit: "10000" });
+    const body = await fetchJson(DATA_API + "?" + params.toString());
+    const points = Array.isArray(body) ? body : (Array.isArray(body.data) ? body.data : (Array.isArray(body.history) ? body.history : []));
+    return points.map(p => {
+      let time = safeNumber(p.timestamp ?? p.t);
+      if (time !== null && time < 100000000000) time *= 1000;
+      if (time === null && p.timestamp) time = Date.parse(p.timestamp);
+      return { time, price: safeNumber(p.price ?? p.p) };
+    }).filter(p => Number.isFinite(p.time) && p.price !== null && p.price >= 0 && p.price <= 1).sort((a, b) => a.time - b.time);
+  }
+
+  async function loadHistory(event) {
+    const key = eventKey(event);
+    if (historyCache.has(key)) {
+      lastCanvasSeries = historyCache.get(key);
+      drawChart(lastCanvasSeries);
+      renderLegend(lastCanvasSeries);
+      return;
+    }
+    const candidateMarkets = [...event.markets].filter(m => m._tokenId).sort((a, b) => b._probability - a._probability).slice(0, 8);
+    if (!candidateMarkets.length) {
+      drawChart([]);
+      $("pmLegend").textContent = "Polymarket did not return historical token IDs for this meeting.";
+      return;
+    }
+    $("pmLegend").textContent = "Loading historical prices…";
+    const histories = await Promise.allSettled(candidateMarkets.map(m => fetchHistory(m._tokenId).then(points => ({ label: m._label, question: m.question, current: m._probability, points }))));
+    const series = histories.filter(r => r.status === "fulfilled" && r.value.points.length > 0).map((r, i) => ({ ...r.value, color: LINE_COLORS[i % LINE_COLORS.length] }));
+    historyCache.set(key, series);
+    lastCanvasSeries = series;
+    drawChart(series);
+    renderLegend(series);
+  }
+
+  function renderLegend(series) {
+    if (!series.length) {
+      $("pmLegend").textContent = "No historical prices were returned for these markets.";
+      return;
+    }
+    $("pmLegend").innerHTML = series.map(s => '<span class="pm-legend-item"><span class="pm-legend-swatch" style="background:' + s.color + '"></span>' + escapeHtml(s.label) + '</span>').join("");
+  }
+
+  function drawChart(series) {
+    const canvas = $("pmHistoryChart");
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const width = Math.max(320, Math.floor(rect.width || 800));
+    const height = Math.max(220, Math.floor(rect.height || 320));
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    const dark = document.body.classList.contains("dark");
+    const ink = dark ? "#d1d5db" : "#475569";
+    const grid = dark ? "#3f3f46" : "#e5e7eb";
+    const left = 46, right = 16, top = 16, bottom = 34;
+    const plotW = width - left - right, plotH = height - top - bottom;
+    ctx.font = "12px Segoe UI, Arial, sans-serif";
+    ctx.fillStyle = ink;
+    ctx.strokeStyle = grid;
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 4; i++) {
+      const value = 100 - i * 25;
+      const y = top + (plotH * i / 4);
+      ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+      ctx.textAlign = "right"; ctx.textBaseline = "middle"; ctx.fillText(value + "%", left - 9, y);
+    }
+    const pointSeries = (series || []).filter(s => s.points && s.points.length);
+    if (!pointSeries.length) {
+      ctx.fillStyle = ink; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText("Historical price data unavailable", width / 2, height / 2 - 7);
+      ctx.font = "11px Segoe UI, Arial, sans-serif";
+      ctx.fillText("Current probabilities remain available in the table below.", width / 2, height / 2 + 14);
+      return;
+    }
+    const allTimes = pointSeries.flatMap(s => s.points.map(p => p.time));
+    let minT = Math.min(...allTimes), maxT = Math.max(...allTimes);
+    if (maxT <= minT) maxT = minT + 1;
+    const xFor = t => left + ((t - minT) / (maxT - minT)) * plotW;
+    const yFor = v => top + (1 - v) * plotH;
+    for (let i = 0; i <= 4; i++) {
+      const t = minT + (maxT - minT) * i / 4;
+      const x = xFor(t);
+      ctx.fillStyle = ink; ctx.textAlign = i === 0 ? "left" : (i === 4 ? "right" : "center"); ctx.textBaseline = "top";
+      ctx.fillText(new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(new Date(t)), x, top + plotH + 10);
+    }
+    for (const s of pointSeries) {
+      ctx.strokeStyle = s.color; ctx.lineWidth = 2; ctx.lineJoin = "round"; ctx.lineCap = "round"; ctx.beginPath();
+      s.points.forEach((point, i) => {
+        const x = xFor(point.time), y = yFor(point.price);
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+  }
+
+  async function loadMarkets(options) {
+    const opts = options || {};
+    if (opts.clearHistory) historyCache.clear();
+    setStatus("Fetching current Fed-rate markets from Polymarket…");
+    try {
+      const found = await discoverEvents();
+      fedEvents = found;
+      renderMeetingOptions();
+      if (!fedEvents.length) {
+        setStatus("The API responded, but no active Fed-rate outcome markets were found. Use the original-dashboard link above to verify availability.", "error");
+        renderSelectedEvent();
+        return;
+      }
+      setStatus("Live API data loaded. Last updated " + new Date().toLocaleTimeString() + ". Probabilities are market prices.", "success");
+      renderSelectedEvent();
+    } catch (error) {
+      console.error("Polymarket data loading error:", error);
+      setStatus("Could not load Polymarket data: " + (error && error.message ? error.message : "network or API error") + ". If this file is opened locally, host it on a web server and check the browser console for CORS or network errors.", "error");
+      if (!fedEvents.length) {
+        $("pmKpiMeeting").textContent = "Unavailable";
+        $("pmKpiOutcomes").textContent = "—";
+        $("pmKpiVolume").textContent = "—";
+        $("pmOutcomes").innerHTML = '<p>Live data could not be reached. The original Polymarket dashboard remains available through the link at the top of this panel.</p>';
+        drawChart([]);
+        $("pmLegend").textContent = "No history loaded.";
+      }
+    }
+  }
+
+  $("pmMeetingSelect").addEventListener("change", function () {
+    selectedEventKey = this.value;
+    renderSelectedEvent();
+  });
+  $("pmRefreshButton").addEventListener("click", function () {
+    loadMarkets({ clearHistory: true });
+  });
+  window.addEventListener("resize", function () { drawChart(lastCanvasSeries); });
+  window.addEventListener("load", function () { drawChart(lastCanvasSeries); });
+
+  loadMarkets();
+  // Refresh market metadata/prices periodically without repeatedly downloading cached history.
+  window.setInterval(function () { loadMarkets({ clearHistory: false }); }, 90000);
+})();
+</script>
+
    </body>
 </html>
